@@ -54,6 +54,7 @@ var TextCollectionView = Backbone.View.extend({
     initialize : function () {
         this.listenTo(this.collection, 'add', this.addView);
         this.listenTo(this.collection, 'remove', this.delView);
+        this.viewz = [];
     },
     events : {
         "click #addbutton" : "addModel",
@@ -64,10 +65,13 @@ var TextCollectionView = Backbone.View.extend({
         // collection adds a model, fires add event, then listener calls this.addView(model)
     },
     delModel : function(){
+    	/*
     	console.log(this.collection.length)
     	var len = this.collection.length
     	viewNum--;
     	this.collection.remove(this.collection.at(len-1));
+    	*/
+    	this.collection.pop();
     },
     addView : function (newModel) {
         newModel.set("value","Enter something here...");
@@ -79,11 +83,16 @@ var TextCollectionView = Backbone.View.extend({
         });
         console.log(view)
         view.render();
+        this.viewz.push(view)
+        console.log(this.viewz)
         this.$("#text-list").append(view.$el);
     },
     delView : function(remModel){
+    	/*
     	console.log("Removed models vewNum = " + remModel.attributes.viewNum)
     	this.$('#'+remModel.attributes.viewNum).remove()
+    	*/
+    	this.viewz.pop().remove()
     }
 });
 
