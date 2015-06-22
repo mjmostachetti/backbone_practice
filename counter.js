@@ -7,7 +7,8 @@ var CounterView = Backbone.View.extend({
         var val = this.model.get("value");
         var btn = '<button id="up">Increment</button>';
         var btndec = '<button id="down">Decrement</button>';
-        this.$el.html('<p>'+val+'</p>' + btn + btndec);
+        var clear = '<button id="clear">Clear</button>';
+        this.$el.html('<p>'+val+'</p>' + btn + btndec + clear);
     }
 });
 
@@ -26,8 +27,17 @@ $(document).ready(function() {
 	});
 	counterView.$el.on("click","#down", function(){
 		var currVal = counterView.model.get("value")
-		counterView.model.set("value",currVal-1)
+		if(currVal <= 0){
+			console.log('can\' decrement below zero!')
+		}
+		else{
+			counterView.model.set("value",currVal-1)
+		}
 	})
+	counterView.$el.on("click","#clear", function () {
+    var mod = counterView.model;
+    mod.set("value",0);
+	});
 
 
 	$("#counterdiv").append(counterView.$el);
