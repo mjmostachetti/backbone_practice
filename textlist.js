@@ -2,9 +2,14 @@ var TextModel = Backbone.Model.extend({
     defaults : {
     	"value" : "",
     	"viewNum" : 0,
+    	"editNum" : 0
     },
     replace : function (str) {
       this.set("value", str);
+    },
+    editNumUp : function(){
+    	var oldNum = this.get("editNum")
+    	this.set("editNum",oldNum + 1)
     }
 });
 
@@ -18,12 +23,14 @@ var TextView = Backbone.View.extend({
     },
     initialize: function () {
         this.model.on("change", this.render, this);
+        this.model.lastVal = this.model.get("value");
         // last argument 'this' ensures that render's
         // 'this' means the view, not the model
     },
     events : {
         "click button" : "clear",
-        "keypress input" : "updateOnEnter"
+        "keypress input" : "updateOnEnter",
+
     },
     replace : function () {
         var str = this.$el.find("input").val();
@@ -31,12 +38,22 @@ var TextView = Backbone.View.extend({
     },
     clear: function () {
         this.model.replace("");
+        this.model.editNumUp();
+        console.log("This view has been edited " + this.model.get("editNum"))
     },
     updateOnEnter: function (e){
         if(e.keyCode == 13) {
+        	console.log("this.lastVal : " + this.model.lastVal);
+        	console.log("this.model.get('value') : " + this.model.get("value"));
+        	if(this.model.lastVal !== this.model.get("value")){
             this.replace();
-        }
-    }
+            this.model.editNumUp();
+            this.model.lastVal = this.model.get("value")
+            console.log("This is the last val : " + this.model.lastVal)
+        		console.log("This view has been edited " + this.model.get("editNum"))
+        	}
+    	}
+		}
 });
 
 var TextCollection = Backbone.Collection.extend({
