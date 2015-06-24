@@ -1,8 +1,8 @@
 var TextModel = Backbone.Model.extend({
     defaults : {
     	"value" : "",
-    	"viewNum" : 0,
-    	"editNum" : 0
+    	"editNum" : 0,
+    	"lastValue": ""
     },
     replace : function (str) {
       this.set("value", str);
@@ -14,16 +14,21 @@ var TextModel = Backbone.Model.extend({
 });
 
 var TextView = Backbone.View.extend({
+		
+		template : _.template("<div> <%=textVal%> <br><div><input type=\'text\' value=\'<%=textVal%>\' /><button>Clear</button></div></div>"),
+
     render: function () {
-        var textVal = this.model.get("value");
-        var viewNumVal = this.model.get("viewNum")
-        var btn = '<button>Clear</button>';
-        var input = '<input type="text" value="' + textVal + '" />';
-        this.$el.html("<div id="+viewNumVal+">"+textVal+"<br><div>" + input + btn + "</div></div>");
+        var textVal = {
+        	textVal : this.model.get("value")
+        };
+        //var btn = '<button>Clear</button>';
+        //var input = '<input type="text" value="' + textVal + '" />';
+        //this.$el.html("<div>"+textVal+"<br><div>" + input + btn + "</div></div>");
+        this.$el.html(this.template(textVal))
     },
     initialize: function () {
         this.model.on("change", this.render, this);
-        this.model.lastVal = this.model.get("value");
+        this.model.set("lastValue",this.model.get("value"))
         // last argument 'this' ensures that render's
         // 'this' means the view, not the model
     },
@@ -39,16 +44,21 @@ var TextView = Backbone.View.extend({
     clear: function () {
         this.model.replace("");
         this.model.editNumUp();
+        this.model.set('lastValue','')
+        console.log(this.model.changed)
         console.log("This view has been edited " + this.model.get("editNum"))
     },
     updateOnEnter: function (e){
+    		//this.replace();
         if(e.keyCode == 13) {
-        	console.log("this.lastVal : " + this.model.lastVal);
+        	//set value to the current
+        	console.log("this.model.lastVal : " + this.model.get('lastValue'));
         	console.log("this.model.get('value') : " + this.model.get("value"));
-        	if(this.model.lastVal !== this.model.get("value")){
+        	console.log(this.model.changed)
+        	if(this.model.get("lastValue") !== this.model.get("value")){
             this.replace();
             this.model.editNumUp();
-            this.model.lastVal = this.model.get("value")
+            this.model.set('lastValue',this.model.get("value"))
             console.log("This is the last val : " + this.model.lastVal)
         		console.log("This view has been edited " + this.model.get("editNum"))
         	}
@@ -82,21 +92,13 @@ var TextCollectionView = Backbone.View.extend({
         // collection adds a model, fires add event, then listener calls this.addView(model)
     },
     delModel : function(){
-    	/*
-    	console.log(this.collection.length)
-    	var len = this.collection.length
-    	viewNum--;
-    	this.collection.remove(this.collection.at(len-1));
-    	*/
     	this.collection.pop();
     },
     addView : function (newModel) {
         newModel.set("value","Enter something here...");
         viewNum++;
-        newModel.set("viewNum",viewNum)
         var view = new TextView({
-        	model : newModel,
-        	viewNum : viewNum
+        	model : newModel
         });
         console.log(view)
         view.render();
@@ -105,10 +107,6 @@ var TextCollectionView = Backbone.View.extend({
         this.$("#text-list").append(view.$el);
     },
     delView : function(remModel){
-    	/*
-    	console.log("Removed models vewNum = " + remModel.attributes.viewNum)
-    	this.$('#'+remModel.attributes.viewNum).remove()
-    	*/
     	this.viewz.pop().remove()
     }
 });
